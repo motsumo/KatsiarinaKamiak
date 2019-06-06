@@ -1,65 +1,123 @@
-let sendButton = document.getElementsByClassName("showInfo")[0];
+const sendButton = document.getElementsByClassName("showInfo")[0];
+const mainDiv = document.getElementsByClassName("mainDiv")[0];
+const imageInput = document.getElementsByTagName("input")[0];
+const inputs = mainDiv.getElementsByTagName("input");
+let imageURL = 'https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg';
+
+validation();
+
+for (const input of inputs) {
+    input.onchange = function () {
+        validation();
+    };
+}
+
+function validation() {
+    const inputs = mainDiv.getElementsByTagName("input");
+    for (const input of inputs) {
+        if (input.value != "" && input.checkValidity()) {
+            sendButton.disabled = false;
+            input.style.border = "none"
+        } else {
+            sendButton.disabled = true;
+            input.style.border = "3px solid #605da0"
+        }
+    }
+}
+
+imageInput.addEventListener('change', photoDisplay);
+
+function photoDisplay() {
+    let curFiles = imageInput.files[0];
+
+    imageURL = window.URL.createObjectURL(curFiles);
+    return imageURL;
+}
 
 sendButton.onclick = function () {
-    let mainDiv = document.getElementsByClassName("mainDiv")[0];
-    let inputs = document.getElementsByTagName("input");
+    let infoObj = {};
+    createInfoObj(infoObj, mainDiv);
 
-    let labels = document.getElementsByTagName("label");
-    let documentInfo = `<div class="info">    
-    <h2>Общие данные: </h2>
-    <div>
-        ${labels[0].innerHTML}: ${inputs[0].value}
-    </div>
-    <div>
-    ${labels[1].innerHTML}: ${inputs[1].value}
-    </div>
-    <div>
-    ${labels[2].innerHTML}: ${inputs[2].value}
-    </div>
-    <div>
-    ${labels[2].innerHTML}: ${inputs[2].value}
-    </div>
-    </div>
-    <div class="education">
-    <h2>Образование: </h2>
-    <div>
-    ${labels[3].innerHTML}: ${inputs[3].value}
-    </div>
+    createInfoDocument(infoObj);
+}
 
-    <div>
-    ${labels[4].innerHTML}: ${inputs[4].value}
-    </div>
+function createInfoObj(obj, doc) {
+    const blocks = doc.getElementsByClassName("block");
+    const blockNames = doc.getElementsByClassName("blockName");
 
-    <div>
-    ${labels[5].innerHTML}: ${inputs[5].value}
-    </div>
+    for (let i = 0; i < blocks.length; i++) {
+        let blockName = blockNames[i].innerHTML;
 
-    <div>
-    ${labels[6].innerHTML}: ${inputs[6].value}
-    </div>
+        let objInputs = {
+            name: `${blockName}`
+        }
 
-    </div>
-    <div class="contactInfo">
-    <h2>Контактная информация: </h2>
-    <div>
-    ${labels[7].innerHTML}: ${inputs[7].value}
-    </div>
+        if (blockName == 'Другое') {
+            const textArea = blocks[i].getElementsByTagName('textarea')[0];
+            objInputs[`${blockName}`] = textArea.value;
+        } else {
+            const inputs = blocks[i].getElementsByTagName("input");
+            for (let i = 0; i < inputs.length; i++) {
+                let key = inputs[i].placeholder;
+                objInputs[key] = `${inputs[i].value}`;
+            }
+        }
 
-    <div>
-    ${labels[8].innerHTML}: ${inputs[8].value}
-    </div>
+        obj[i] = objInputs;
+    }
 
-    <div>
-    ${labels[9].innerHTML}: ${inputs[9].value}
-    </div>
+    return obj;
+}
 
-    <div>
-    ${labels[10].innerHTML}: ${inputs[10].value}
-    </div>
-    <div>
-    ${labels[11].innerHTML}: ${inputs[11].value}
-    </div>
-    </div>`;
+function createInfoDocument(obj) {
+    mainDiv.innerHTML = '<h1>Анкета</h1>'
 
-    mainDiv.innerHTML = documentInfo;
+    for (let keys in obj) {
+        let infoHtml;
+        let objectByKey = obj[keys];
+        let blockHeader = `<h2>${objectByKey.name}</h2><div class="block"></div>`;
+        mainDiv.insertAdjacentHTML("beforeend", blockHeader);
+
+        for (let key in objectByKey) {
+            let blockHead = document.getElementsByClassName("block")[keys];
+            if (key == "Фотография") {
+                infoHtml = `<div> ${key}: <div class="photo"><img src="${imageURL}"></div> </div>`;
+                blockHead.insertAdjacentHTML("beforeend", infoHtml);
+            } else if (key != "name") {
+                infoHtml = `<div>${key}: ${objectByKey[key]}</div>`;
+                blockHead.insertAdjacentHTML("beforeend", infoHtml);
+            }
+        }
+    }
+
+    let buttonsDownloadAndPrint = ` <button class="download">Download</button>
+                                    <button class="print">Print</button>`;
+    mainDiv.insertAdjacentHTML("beforeend", buttonsDownloadAndPrint);
+
+    const buttonDownload = document.getElementsByClassName("download")[0];
+    buttonDownload.onclick = function () {
+        let data = JSON.stringify(obj);
+        let name = obj[0]["Фамилия"] ? obj[0]["Фамилия"] : "file";
+        let fileName = name.toString() + ".json";
+        download(fileName, data)
+    }
+
+    const printDownload = document.getElementsByClassName("print")[0];
+    printDownload.onclick = function () {
+        window.print()
+    }
+}
+
+
+function download(filename, text) {
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
 }
