@@ -6,23 +6,32 @@ let imageURL = 'https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_ava
 
 validation();
 
-for (const input of inputs) {
-    input.onchange = function () {
+for (let i = 1; i < inputs.length; i++) {
+    inputs[i].style.cssText = "border-bottom : 3px solid #605da0"
+    inputs[i].onchange = function () {
+        validationStyle(inputs[i]);
         validation();
     };
 }
 
+function validationStyle(input) {
+    if (input.value != "" && input.checkValidity()) {
+        input.style.border = "none"
+    } else {
+        input.style.cssText = "border-bottom : 3px solid #605da0"
+    }
+}
+
 function validation() {
-    const inputs = mainDiv.getElementsByTagName("input");
-    for (const input of inputs) {
-        if (input.value != "" && input.checkValidity()) {
+    for (let i = 1; i < inputs.length - 2; i++) {
+        if (inputs[i].value != "" && inputs[i].checkValidity()) {
             sendButton.disabled = false;
-            input.style.border = "none"
         } else {
             sendButton.disabled = true;
-            input.style.border = "3px solid #605da0"
+            break;
         }
     }
+
 }
 
 imageInput.addEventListener('change', photoDisplay);
