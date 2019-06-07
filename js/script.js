@@ -46,7 +46,7 @@ function photoDisplay() {
 sendButton.onclick = function () {
     let infoObj = {};
     createInfoObj(infoObj, mainDiv);
-
+    console.log(infoObj);
     createInfoDocument(infoObj);
 }
 
@@ -58,7 +58,7 @@ function createInfoObj(obj, doc) {
         let blockName = blockNames[i].innerHTML;
 
         let objInputs = {
-            name: `${blockName}`
+            objIndex: `${i}`
         }
 
         if (blockName == 'Другое') {
@@ -72,7 +72,7 @@ function createInfoObj(obj, doc) {
             }
         }
 
-        obj[i] = objInputs;
+        obj[`${blockName}`] = objInputs;
     }
 
     return obj;
@@ -84,15 +84,15 @@ function createInfoDocument(obj) {
     for (let keys in obj) {
         let infoHtml;
         let objectByKey = obj[keys];
-        let blockHeader = `<h2>${objectByKey.name}</h2><div class="block"></div>`;
+        let blockHeader = `<h2>${keys}</h2><div class="block"></div>`;
         mainDiv.insertAdjacentHTML("beforeend", blockHeader);
 
         for (let key in objectByKey) {
-            let blockHead = document.getElementsByClassName("block")[keys];
+            let blockHead = document.getElementsByClassName("block")[objectByKey.objIndex];
             if (key == "Фотография") {
                 infoHtml = `<div> ${key}: <div class="photo"><img src="${imageURL}"></div> </div>`;
                 blockHead.insertAdjacentHTML("beforeend", infoHtml);
-            } else if (key != "name") {
+            } else if (key != "objIndex") {
                 infoHtml = `<div>${key}: ${objectByKey[key]}</div>`;
                 blockHead.insertAdjacentHTML("beforeend", infoHtml);
             }
@@ -106,7 +106,7 @@ function createInfoDocument(obj) {
     const buttonDownload = document.getElementsByClassName("download")[0];
     buttonDownload.onclick = function () {
         let data = JSON.stringify(obj);
-        let name = obj[0]["Фамилия"] ? obj[0]["Фамилия"] : "file";
+        let name = obj["Общие данные"]["Фамилия"] ? obj["Общие данные"]["Фамилия"] : "file";
         let fileName = name.toString() + ".json";
         download(fileName, data)
     }
